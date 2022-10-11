@@ -1,2 +1,2 @@
 all:
-	gcc -o sas *.c -l:scinstdlib.a
+	gcc -o graphite_assembler *.c -l:scinstdlib.a -O0 -g

@@ -1,2 +1,4 @@
 *.graphite
-sas
+graphite_assembler
+*.graphitecode
+*.schem

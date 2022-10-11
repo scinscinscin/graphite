@@ -4,12 +4,10 @@
 #include <string.h>
 
 void print_binary(int number, int width){
-	printf("0b");
+	// printf("0b");
 	for(int i = 1; i <= width; i++){
 		printf("%d", (number >> (width - i)) & 1);
 	}
-
-	printf(" ");
 }
 
 struct LexerData{
@@ -408,8 +406,11 @@ int verify_register_flags(const char *const key, int flags){
 }
 
 enum CompilerResult print_opcode_parameters(int opcode_flags, int parameter_1, int parameter_2){
+	printf(" ");
 	print_binary(opcode_flags, 3);
+	printf(" ");
 	print_binary(parameter_1, 8);
+	printf(" ");
 	print_binary(parameter_2, 8);
 	printf("\n");
 	return CompilerResult_OK;
@@ -695,13 +696,9 @@ enum CompilerResult reset_handler(struct Array *operands, struct ParsingData *pa
 	return CompilerResult_CODE_GENERATION_ERROR;
 }
 
-#define DECLARE_SIMPLE_HANDLER(name) \
-	enum CompilerResult name(struct Array *operands, struct ParsingData *parsing_data){ \
-		return print_opcode_parameters(0, 0, 0); \
-	} \
-
-DECLARE_SIMPLE_HANDLER(reset_all_handler);
-DECLARE_SIMPLE_HANDLER(hlt_handler);
+enum CompilerResult nop_handler(struct Array *operands, struct ParsingData *parsing_data){
+	return print_opcode_parameters(0, 0, 0);
+}
 
 enum CompilerResult jmp_handler(struct Array *operands, struct ParsingData *parsing_data){
 	// Jump immediate
@@ -762,6 +759,7 @@ struct Mnemonic{
 };
 
 struct Mnemonic graphite_mnemonics[] = {
+	[0b00000] = { .name = "nop",      .operand_handler = &nop_handler  },
 	[0b00001] = { .name = "add",      .operand_handler = &arithmetic_handler  },
 	[0b00010] = { .name = "sub",      .operand_handler = &arithmetic_handler  },
 	[0b00011] = { .name = "xor",      .operand_handler = &arithmetic_handler  },
@@ -777,14 +775,14 @@ struct Mnemonic graphite_mnemonics[] = {
 	[0b10011] = { .name = "push",     .operand_handler = &push_handler        },
 	[0b10100] = { .name = "pop",      .operand_handler = &pop_handler         },
 	[0b10101] = { .name = "reset",    .operand_handler = &reset_handler       },
-	[0b10110] = { .name = "resetall", .operand_handler = &reset_all_handler   },
+	[0b10110] = { .name = "resetall", .operand_handler = &nop_handler         },
 	[0b11101] = { .name = "jmp",      .operand_handler = &jmp_handler         },
 	[0b11110] = { .name = "cjmp",     .operand_handler = &jmp_handler         },
-	[0b11111] = { .name = "hlt",      .operand_handler = &hlt_handler         },
+	[0b11111] = { .name = "hlt",      .operand_handler = &nop_handler         },
 };
 
 int find_index_of_mnemonic(const char *const key){
-	for(int i = 1; i < sizeof(graphite_mnemonics) / sizeof(struct Mnemonic); i++){
+	for(int i = 0; i < sizeof(graphite_mnemonics) / sizeof(struct Mnemonic); i++){
 		if(graphite_mnemonics[i].name == NULL) continue;
 		if(strcmp(graphite_mnemonics[i].name, key) == 0) return i;
 	}
